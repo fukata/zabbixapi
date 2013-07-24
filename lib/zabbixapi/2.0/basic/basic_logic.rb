@@ -25,16 +25,26 @@ class ZabbixApi
       id ? update(data.merge(key.to_sym => id.to_s)) : create(data)
     end
 
-    def update(data)     
-      log "[DEBUG] Call update with parametrs: #{data.inspect}"
+    def update(data)
+      __update(data, true)
+    end
+
+    def update!(data)
+      __update(data, false)
+    end
+
+    def __update(data, check_update)
+      log "[DEBUG] Call update with parametrs: #{data.inspect}, check_update: #{check_update}"
       
       dump = {}
-      item_id = data[key.to_sym].to_i
-      dump_by_id(key.to_sym => data[key.to_sym]).each do |item|
-        dump = symbolize_keys(item) if item[key].to_i == data[key.to_sym].to_i
+      if check_update
+        item_id = data[key.to_sym].to_i
+        dump_by_id(key.to_sym => data[key.to_sym]).each do |item|
+          dump = symbolize_keys(item) if item[key].to_i == data[key.to_sym].to_i
+        end
       end
 
-      if hash_equals?(dump, data) 
+      if check_update and hash_equals?(dump, data) 
         log "[DEBUG] Equal keys #{dump} and #{data}, skip update"
         item_id
       else
